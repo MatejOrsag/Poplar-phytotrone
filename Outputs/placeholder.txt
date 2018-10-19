@@ -1,0 +1,1 @@
+This is just a placeholder needed to create the folder structure. It can be deleted after any other file will be added into the folder.
