@@ -9,7 +9,7 @@ library(car)
 library(MASS)
 
 #Read data
-gdat<-read.delim('Inputs/gasometry_M.txt',header=T,sep=';')
+gdat<-read.delim('Inputs/gasometry_M.csv',header=T,sep=';')
 bdat<-read.delim('Inputs/biometric.csv',header=T,sep=',')
 
 #Generate Day of Experiment for gas exchange
@@ -56,7 +56,9 @@ print(r.squaredGLMM(finalasat))
 
 tiff(filename="Outputs/PreHWdataAsat.tif", width=1240, height=560, units='px', type='cairo')
 plot(Ttr:CO2:Wtr,Asat,xaxt='n')
-points(Ttr:CO2:Wtr,fitted(finalasat),col=2,cex=2)
+predAsat<-fitted(finalasat)
+points(Ttr:CO2:Wtr,predAsat,col=2,cex=2)
+write.csv(predAsat,'Outputs/PreHWpredAsat.csv',row.names=F)
 par(cex.axis=.6)
 axis(1,cex=.7,labels=unique(Ttr:CO2:Wtr),at=c(1:2,5:12))
 dev.off()
@@ -75,11 +77,12 @@ print(r.squaredGLMM(finalasat))
 
 tiff(filename="Outputs/PreHWdataCond.tif", width=1240, height=560, units='px', type='cairo')
 plot(Ttr:CO2:Wtr,Cond,xaxt='n')
-points(Ttr:CO2:Wtr,fitted(finalasat),col=2,cex=2)
+predCond<-fitted(finalasat)
+points(Ttr:CO2:Wtr,predCond,col=2,cex=2)
 par(cex.axis=.6)
 axis(1,cex=.7,labels=unique(Ttr:CO2:Wtr),at=c(1:2,5:12))
 dev.off()
-
+write.csv(predCond,'Outputs/PreHWpredCond.csv',row.names=F)
 #fit LMM for WUE
 preHWdat2<-preHWdat
 preHWdat2<-preHWdat2[Cond>0.001,]
@@ -101,3 +104,6 @@ points(preHWdat2$Ttr:preHWdat2$CO2:preHWdat2$Wtr,fitted(finalasat),col=2,cex=2)
 par(cex.axis=.6)
 axis(1,cex=.7,labels=unique(Ttr:CO2:Wtr),at=c(1:2,5:12))
 dev.off()
+predWUE<-predCond*NA
+predWUE[Cond>0.001]<-fitted(finalasat)
+write.csv(predWUE,'Outputs/PreHWpredWUE.csv',row.names=F)
