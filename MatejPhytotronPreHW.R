@@ -37,7 +37,7 @@ Asat<-preHW$Photo
 Cond<-preHW$Cond
 WUE<-preHW$WUE
 Day<-DOX[DOX<15]
-preHWdat<-data.frame(cbind(Tree,Ttr,Wtr,CO2,Day,Asat,Cond,WUE))
+preHWdat<-data.frame(Tree,Ttr,Wtr,CO2,Day,Asat,Cond,WUE)
 for(i in 1:4) preHWdat[,i]<-factor(preHWdat[,i]) #make sure factors are assigned as such
 #Check Normality
 #qqp(preHWdat$Asat,'norm')
@@ -58,10 +58,19 @@ tiff(filename="Outputs/PreHWdataAsat.tif", width=1240, height=560, units='px', t
 plot(Ttr:CO2:Wtr,Asat,xaxt='n')
 predAsat<-fitted(finalasat)
 points(Ttr:CO2:Wtr,predAsat,col=2,cex=2)
-write.csv(predAsat,'Outputs/PreHWpredAsat.csv',row.names=F)
+#write.csv(predAsat,'Outputs/PreHWpredAsat.csv',row.names=F)
 par(cex.axis=.6)
 axis(1,cex=.7,labels=unique(Ttr:CO2:Wtr),at=c(1:2,5:12))
 dev.off()
+
+TreeID<-Tree:(Wtr:Ttr)
+TreeIDunique<-unique(TreeID)
+predAsatTree<-numeric()
+for(i in TreeIDunique){
+  predAsatTree<-c(predAsatTree,mean(preHWdat$Asat[TreeID==i]))
+}
+predAsatTreeOut<-data.frame(TreeIDunique,predAsatTree)
+write.csv(predAsatTreeOut,'Outputs/PreHWpredAsat.csv',row.names=F)
 
 #fit LMM for Conductance
 fitasat<-lmer(Cond~(Ttr)+(Wtr)+(CO2)+Wtr:CO2+Wtr:CO2+(1|Ttr/Wtr/Tree),data=preHWdat,REML=F,na.action="na.fail")
@@ -70,7 +79,7 @@ print(dredge(fitasat,rank='AICc'))
 
 print(dredge(fitasat,rank='BIC'))
 
-finalasat<-lmer(Cond~(Wtr)+(CO2)+(1|Ttr/Wtr/Tree),data=preHWdat,REML=F,na.action="na.fail")
+finalasat<-lmer(Cond~(Wtr)+(Ttr)+(1|Ttr/Wtr/Tree),data=preHWdat,REML=F,na.action="na.fail")
 print(summary(finalasat))
 print(coef(finalasat))
 print(r.squaredGLMM(finalasat))
@@ -82,7 +91,17 @@ points(Ttr:CO2:Wtr,predCond,col=2,cex=2)
 par(cex.axis=.6)
 axis(1,cex=.7,labels=unique(Ttr:CO2:Wtr),at=c(1:2,5:12))
 dev.off()
-write.csv(predCond,'Outputs/PreHWpredCond.csv',row.names=F)
+
+TreeID<-Tree:(Wtr:Ttr)
+TreeIDunique<-unique(TreeID)
+predCondTree<-numeric()
+for(i in TreeIDunique){
+  predCondTree<-c(predCondTree,mean(preHWdat$Cond[TreeID==i]))
+}
+predCondTreeOut<-data.frame(TreeIDunique,predCondTree)
+write.csv(predCondTreeOut,'Outputs/PreHWpredCond.csv',row.names=F)
+
+
 #fit LMM for WUE
 preHWdat2<-preHWdat
 preHWdat2<-preHWdat2[Cond>0.001,]
